@@ -88,54 +88,75 @@ for i in range(len(category)):
     unfall.rename(columns={'WERT':category[i]},inplace=True)
 
 #Add time series index
-#unfall['MONAT'] = unfall['MONAT'].apply(lambda x : pd.to_datetime(str(x), format='%Y%m'))
-unfall['MONAT'] = unfall['MONAT'].apply(lambda x : datetime.strptime(x, '%Y%m'))
-#sorting 'MONAT' in an ascending order
-unfall = unfall.sort_values(by = 'MONAT')
-unfall.set_index('MONAT', inplace=True)
+unfall.rename(columns={'MONAT':'Date'},inplace=True)
+#unfall['Date'] = unfall['Date'].apply(lambda x : pd.to_datetime(str(x), format='%Y%m'))
+unfall['Date'] = unfall['Date'].apply(lambda x : datetime.strptime(x, '%Y%m'))
+#sorting 'Date' in an ascending order
+unfall = unfall.sort_values(by = 'Date')
+unfall.set_index('Date', inplace=True)
 unfall.head()
 
 #%% Visualisation of three data sets
-unfall.plot(subplots=True, figsize=(10,12))
+#Assume that traffic accidents do not include alcohol accidents and escape accidents.
+#Alcohol Accidents have the lowest numbers and all three sets show some seasonality.
+cmap = plt.get_cmap('Set1',3)
+unfall.plot(subplots=True, figsize=(10,12), colormap=cmap)
+#plt.show()
+
+#Annual Traffic Accidents
+#Alcohole Accidents show a decreasing trend.
+unfall.resample('Y').sum().plot(subplots=True, figsize=(10,12), xlabel='Year',colormap=cmap, style='.-')
 plt.show()
 
 #Average percentage of traffic accidents in Pie Chart
+#highlights the proportion of accidents
 plt.pie(
         unfall.mean(),
         labels=[category[0],category[1],category[2]],
-        colors=['#DAA520','#40E0D0','#FF6347'], #'goldenrod','turquoise','tomato'
+        colors= cmap.colors,
         explode=(0.5, 0, 0),
         autopct='%.2f%%'
         )
 plt.title('Average proportion of traffic accidents 2000-2021')
 plt.show()
 
+#Monthly accidents as a proportion of the year (Average)
+#High correlation between escape accidents and traffic accidents.
+#July, September and October are the peak months of the year.
+unfall_month= unfall.set_index(unfall.index.month) #DatetimeIndex
+#unfall_month=100*unfall_month.mean(level=0)/(12*unfall_month.mean())
+unfall_month=100*unfall_month.groupby('Date').agg('mean')/(12*unfall_month.mean())
+
+unfall_month.plot(
+                  colormap=cmap, style='.-',
+                  title='Monthly accidents as a proportion of the year (Average)',
+                  xlabel='Month',
+                  figsize=(10,6)
+                  )
 
 #%%Split data of Alkoholunfälle after 2020 
 train = unfall.loc['2000':'2020',[category[0]]].copy()
 test = unfall.loc['2021',[category[0]]].copy()
 train.plot()
-plt.show()
+#plt.show()
 
-#Data shows seasonal characteristics
+#To see if it has seasonal characteristic
 train['2002':'2004'].plot()
-plt.show()
+#plt.show()
 train['2012':'2015'].plot()
-plt.show()
+#plt.show()
 
 #%%Stationary test (Augmented Dickey-Fuller Test)
 #Calculate first differencing of the series
 diff1 = train.diff(1).dropna()
-diff1.plot()
-plt.title('First-difference of training set')
-plt.show()
+diff1.plot(title='First-difference of training set')
+#plt.show()
 
 #took the difference over a period of 12 months
 #shows that the order of seasonal differencing (D) is 1
 diff1_seasonal = diff1.diff(12).dropna()
-diff1_seasonal.plot()
-plt.title('Seasonal differencing')
-plt.show()
+diff1_seasonal.plot(title='Seasonal differencing')
+#plt.show()
 
 print("p-value: %f" %adfuller(train)[1])
 #diff1 is stationary from the result of Augmented Dickey-Fuller Test
