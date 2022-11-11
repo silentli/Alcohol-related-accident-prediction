@@ -130,7 +130,7 @@ unfall_month=100*unfall_month.groupby('Date').agg('mean')/(12*unfall_month.mean(
 unfall_month.plot(
                   colormap=cmap, style='.-',
                   title='Monthly accidents as a proportion of the year (Average)',
-                  xlabel='Month',
+                  xlabel='Month',ylabel='%',
                   figsize=(10,6)
                   )
 
