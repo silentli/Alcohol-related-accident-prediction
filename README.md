@@ -18,5 +18,11 @@ Transform:
 ### Evaluation Metrics
 1) Root Mean Squared Error (RMSE)
 
+### Deployment
+1) save & load the predict model using Pickle
+2) Deploying the model to Heroku using Flask
+Application URL: https://accident-prediction-heroku.herokuapp.com/predict 
+notice: Heroku no longer supporting free plans, the link will not be available.
+
 ### Data Source:
 ([Monthly figures for traffic accidents](https://opendata.muenchen.de/dataset/monatszahlen-verkehrsunfaelle/resource/40094bd6-f82d-4979-949b-26c8dc00b9a7))
