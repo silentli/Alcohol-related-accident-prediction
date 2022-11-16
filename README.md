@@ -23,11 +23,13 @@ Transform:
 2) Deploying the model to Heroku using Flask  
 3) Application URL: https://accident-prediction-heroku.herokuapp.com/predict  
 4) POST request with a JSON body:
+
 		{
 			"year":2020,
 			"month":10
 		}
-- Notice: Heroku no longer supporting free plans, the link will not be available.
+
+5) Notice: Heroku no longer supporting free plans, the link will not be available.
 
 ### Data Source:
 ([Monthly figures for traffic accidents](https://opendata.muenchen.de/dataset/monatszahlen-verkehrsunfaelle/resource/40094bd6-f82d-4979-949b-26c8dc00b9a7))
