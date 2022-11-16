@@ -24,8 +24,8 @@ Transform:
 3) Application URL: https://accident-prediction-heroku.herokuapp.com/predict  
 4) POST request with a JSON body:
 		{
-		"year":2020,
-		"month":10
+			"year":2020,
+			"month":10
 		}
 - Notice: Heroku no longer supporting free plans, the link will not be available.
 
