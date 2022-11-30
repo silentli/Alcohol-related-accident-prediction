@@ -20,6 +20,8 @@ from statsmodels.tsa.statespace.sarimax import SARIMAX
 from statsmodels.tsa.holtwinters import ExponentialSmoothing
 from itertools import product
 from sklearn.metrics import mean_squared_error
+from sklearn.preprocessing import StandardScaler
+from sklearn.ensemble import RandomForestRegressor
 from math import sqrt
 import pickle
 
@@ -58,6 +60,27 @@ def AIC(exog, parameters_list, T):
     #Sorting AIC with the sort_values(), in an ascending order
     result_table = result_table.sort_values(by='AIC', ascending=True).reset_index(drop=True)
     return result_table
+
+#%% Add time features for ML
+def create_time_features(data, target=None):
+    """
+    Creates time series features from datetime index
+    """
+    df = data.copy()
+    df['date'] = df.index
+    df['year'] = df['date'].dt.year
+    df['quarter'] = df['date'].dt.quarter
+    df['month'] = df['date'].dt.month
+    df['dayofyear'] = df['date'].dt.dayofyear
+    df['sin_day'] = np.sin(df['dayofyear'])
+    df['cos_day'] = np.cos(df['dayofyear'])
+    X = df.drop(['date'], axis=1)
+    if target:
+        y = X[target]
+        X = X.drop([target], axis=1)
+        return X, y
+
+    return X
 
 #%% Read Data
 data = pd.read_csv('verkehrsunfaelle.csv')
@@ -258,6 +281,21 @@ unfall_alcohol['ETS'][test.index] = train_ets.predict(start=test.index[0], end=t
 unfall_alcohol['D_ETS'] = (unfall_alcohol['ETS']-unfall_alcohol[category[0]])
 rmse_ets = sqrt(mean_squared_error(test, unfall_alcohol['2021']['ETS'])) 
 
+#%% Set data for multivariate time series forecasting
+x_train, y_train= create_time_features(train, target=category[0])
+x_test, y_test = create_time_features(test, target=category[0])
+scaler = StandardScaler()
+x_train = scaler.fit_transform(x_train)
+x_test = scaler.transform(x_test)
+
+#%% Random Forest
+reg = RandomForestRegressor(n_estimators = 1000, random_state = 42)
+reg.fit(x_train, y_train)
+yhat = reg.predict(x_test)
+unfall_alcohol['Randomforest'] = np.nan
+unfall_alcohol['Randomforest'][test.index] = yhat.round()
+rmse_randomforest = sqrt(mean_squared_error(test, unfall_alcohol['2021']['Randomforest'])) 
+
 #%% Visualisation of results
 plt.figure(figsize=(16,8))
 plt.plot(train,label='Train')
@@ -281,7 +319,14 @@ plt.plot(unfall_alcohol['ETS'],color='pink', label='ETS')
 plt.legend()
 plt.show()
 
-print('rmse_sarima:',rmse_sarima, 'rmse_arima:', rmse_arima, 'rmse_ets:',rmse_ets)
+plt.figure(figsize=(16,8))
+plt.plot(train,label='Train')
+plt.plot(test,label='Test')
+plt.plot(unfall_alcohol['Randomforest'],color='pink', label='RandomForest')
+plt.legend()
+plt.show()
+
+print('rmse_sarima: %f\nrmse_arima: %f\nrmse_ets: %f\nrmse_randomforest: %f\n' %(rmse_sarima, rmse_arima, rmse_ets, rmse_randomforest))
 print(unfall_alcohol['2021'])
 
 
@@ -294,4 +339,3 @@ with open('model.pickle','wb') as file:
 
 with open('model.pickle', 'rb') as file:
     model=pickle.load(file)
-    print(model.forecast('2021-01')[0].round())
