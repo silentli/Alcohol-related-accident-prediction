@@ -14,6 +14,7 @@ Transform:
 1) Autoregressive integraded moving average (ARIMA)
 2) Seasonal autoregressive integrated moving average (SARIMA)
 3) Exponential Smoothing (ETS) 
+4) Random Forest
 
 ### Evaluation Metrics
 1) Root Mean Squared Error (RMSE)
