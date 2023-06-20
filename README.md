@@ -30,7 +30,7 @@ Transform:
 			"month":10
 		}
 
-5) Notice: Heroku no longer supporting free plans after 28.11.2022. The link is probably invalid.
+5) Notice: Heroku no longer supports free plans after 28.11.2022. The link is probably invalid.
 
 ### Data Source:
 [Monthly figures for traffic accidents](https://opendata.muenchen.de/dataset/monatszahlen-verkehrsunfaelle/resource/40094bd6-f82d-4979-949b-26c8dc00b9a7)
